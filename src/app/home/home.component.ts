@@ -4,11 +4,19 @@ import { Product, Products } from '../../types';
 import { ProductComponent } from '../components/product/product.component';
 import { CommonModule } from '@angular/common';
 import { PaginatorModule } from 'primeng/paginator';
+import { EditPopupComponent } from '../components/edit-popup/edit-popup.component';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ProductComponent, CommonModule, PaginatorModule],
+  imports: [
+    ProductComponent,
+    CommonModule,
+    PaginatorModule,
+    EditPopupComponent,
+    ButtonModule
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -19,12 +27,47 @@ export class HomeComponent {
   totalRecords: number = 0;
   rows: number = 5;
 
+  displayEditPopup: boolean = false;
+  displayAddPopup: boolean = false;
+
+  selectedProduct: Product = {
+    id: 0,
+    name: '',
+    image: '',
+    price: '',
+    rating: 0,
+  };
+
   onProductOutput(product: Product) {
     console.log(product, 'Output');
   }
 
   onPageChange(event: any) {
     this.fetchProducts(event.page, event.rows);
+  }
+
+  onConfirmEdit(product: Product) {
+    if (!this.selectedProduct.id) {
+      return;
+    }
+    this.editProduct(product, this.selectedProduct.id);
+  }
+
+  onConfirmAdd(product: Product) {
+    this.addProduct(product);
+    this.displayAddPopup = false;
+  }
+
+  toggleEditPopup(product: Product) {
+    this.selectedProduct = product;
+    this.displayEditPopup = true;
+  }
+
+  toggleDeletePopup(product: Product) {
+  }
+
+  toggleAddPopup() {
+    this.displayAddPopup = true;
   }
 
   fetchProducts(page: number, perPage: number) {
@@ -41,7 +84,7 @@ export class HomeComponent {
       });
   }
 
-  editProducts(product: Product, id: number) {
+  editProduct(product: Product, id: number) {
     this.productsService
       .editProduct(`http://localhost:3000/clothes/${id}`, product)
       .subscribe({
@@ -64,9 +107,9 @@ export class HomeComponent {
       });
   }
 
-  addProducts(product: Product, id: number) {
+  addProduct(product: Product) {
     this.productsService
-      .addProduct(`http://localhost:3000/clothes/${id}`, product)
+      .addProduct(`http://localhost:3000/clothes/`, product)
       .subscribe({
         next: (data) => {
           console.log(data);
